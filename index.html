@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✦ Packed — Digital Closet</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    :root {
+      --cream: #f7f4ef; --warm-white: #faf8f5; --taupe: #c4b8a8;
+      --brown: #8B7355; --dark: #1e1c1a; --mid: #5a5450; --light: #9a9088;
+      --accent: #c17b4e; --green: #5A8A6A; --border: #e8e0d4;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+    .serif { font-family: 'Cormorant Garamond', serif; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--taupe); border-radius: 2px; }
+
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+    .nav { background: var(--warm-white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 4px; height: 56px; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; letter-spacing: 0.02em; margin-right: 10px; color: var(--dark); flex-shrink: 0; }
+    .nav-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid transparent; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; background: transparent; color: var(--mid); font-family: 'Inter', sans-serif; white-space: nowrap; }
+    .nav-btn:hover { background: var(--cream); color: var(--dark); }
+    .nav-btn.active { background: var(--dark); color: white; }
+    .main { flex: 1; padding: 32px 24px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+    /* Inputs */
+    input[type=text], input[type=date], select, textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--dark); background: white; outline: none; transition: border-color 0.15s;
+    }
+    input[type=text]:focus, input[type=date]:focus, select:focus, textarea:focus { border-color: var(--brown); }
+    textarea { resize: vertical; min-height: 72px; }
+    input[type=range] { -webkit-appearance: none; height: 3px; background: var(--border); border-radius: 2px; outline: none; width: 100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--brown); border-radius: 50%; cursor: pointer; }
+
+    /* Buttons */
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--dark); color: white; }
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary { background: var(--cream); color: var(--dark); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: #b06b3e; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; }
+    .btn-icon { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 50%; }
+
+    /* Chips */
+    .chip-btn { padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: white; font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--mid); font-family: 'Inter', sans-serif; white-space: nowrap; }
+    .chip-btn:hover { border-color: var(--brown); color: var(--dark); }
+    .chip-btn.on { background: var(--dark); color: white; border-color: var(--dark); }
+    .chip-btn.on-accent { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* Modal */
+    .overlay { position: fixed; inset: 0; background: rgba(20,18,16,0.52); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal { background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 92vh; overflow-y: auto; }
+    .modal-lg { max-width: 680px; }
+    .modal-head { padding: 22px 24px 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 18px 24px 24px; }
+
+    /* Form */
+    .fg { margin-bottom: 16px; }
+    .fl { display: block; font-size: 11px; font-weight: 600; color: var(--light); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Section */
+    .sec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sec-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin: 0; }
+
+    /* Sub-tabs inside a view */
+    .sub-tabs { display: flex; gap: 3px; background: var(--cream); border-radius: 10px; padding: 3px; margin-bottom: 22px; width: fit-content; }
+    .sub-tab { padding: 7px 18px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; background: transparent; color: var(--mid); font-family: 'Inter', sans-serif; }
+    .sub-tab.active { background: white; color: var(--dark); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+    /* Wardrobe grid */
+    .wardrobe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+    .item-card { border-radius: 12px; overflow: hidden; cursor: pointer; border: 1.5px solid var(--border); background: white; transition: all 0.15s; }
+    .item-card:hover { border-color: var(--brown); box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    .item-card.hero { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(193,123,78,0.18); }
+    .item-card.selected-check { border-color: var(--green); box-shadow: 0 0 0 2px rgba(90,138,106,0.2); }
+    .item-photo-box { width: 100%; height: 125px; background: var(--cream); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .item-photo-box img { width: 100%; height: 100%; object-fit: cover; }
+    .item-check-badge { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .item-info { padding: 8px 10px 10px; }
+    .item-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .item-type { font-size: 11px; color: var(--light); }
+
+    /* Photo drop */
+    .photo-drop { border: 2px dashed var(--border); border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--cream); }
+    .photo-drop:hover { border-color: var(--brown); background: #f0ece6; }
+    .photo-preview { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; display: block; }
+
+    /* Steps */
+    .steps { display: flex; align-items: flex-start; margin-bottom: 28px; }
+    .step { flex: 1; text-align: center; position: relative; }
+    .step::before { content: ''; position: absolute; top: 13px; right: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+    .step:first-child::before { display: none; }
+    .step-dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); background: white; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--light); position: relative; z-index: 1; transition: all 0.2s; margin-bottom: 5px; }
+    .step.done .step-dot { background: var(--green); border-color: var(--green); color: white; }
+    .step.active .step-dot { background: var(--dark); border-color: var(--dark); color: white; }
+    .step-label { font-size: 11px; color: var(--light); display: block; }
+    .step.active .step-label { color: var(--dark); font-weight: 500; }
+
+    /* Vacation type cards */
+    .vac-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .vac-card { padding: 14px 12px; border-radius: 12px; border: 2px solid var(--border); cursor: pointer; text-align: center; background: white; transition: all 0.15s; }
+    .vac-card:hover { border-color: var(--brown); }
+    .vac-card.sel { border-color: var(--dark); background: var(--dark); color: white; }
+    .vac-icon { font-size: 24px; margin-bottom: 4px; }
+    .vac-label { font-size: 12px; font-weight: 500; }
+
+    /* Luggage cards */
+    .lug-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .lug-card { padding: 12px; border-radius: 10px; border: 2px solid var(--border); cursor: pointer; background: white; transition: all 0.15s; }
+    .lug-card:hover { border-color: var(--brown); }
+    .lug-card.sel { border-color: var(--dark); background: var(--dark); color: white; }
+
+    /* Weather badge */
+    .w-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; background: var(--cream); border: 1px solid var(--border); font-size: 12px; }
+
+    /* Tab bar */
+    .tab-bar { display: flex; gap: 3px; background: var(--cream); border-radius: 10px; padding: 3px; margin-bottom: 24px; }
+    .tab-btn { flex: 1; padding: 8px 6px; border-radius: 8px; border: none; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; background: transparent; color: var(--mid); font-family: 'Inter', sans-serif; }
+    .tab-btn.active { background: white; color: var(--dark); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+    /* Outfit cards */
+    .outfit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .outfit-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: box-shadow 0.15s; }
+    .outfit-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .outfit-card.saved-set { border-color: #d4c8b8; background: #fdfaf7; }
+    .outfit-pieces { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: flex-end; }
+    .o-piece { text-align: center; flex-shrink: 0; }
+    .o-piece-img { border-radius: 8px; overflow: hidden; background: var(--cream); display: flex; align-items: center; justify-content: center; margin: 0 auto 3px; }
+    .o-piece-label { font-size: 9px; color: var(--light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Packing list */
+    .pack-section { margin-bottom: 22px; }
+    .pack-section-label { font-size: 12px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .pack-row { display: flex; align-items: center; gap: 10px; padding: 9px 13px; border-radius: 8px; background: white; border: 1px solid var(--border); margin-bottom: 5px; font-size: 13px; cursor: pointer; transition: background 0.1s; user-select: none; }
+    .pack-row:hover { background: var(--cream); }
+    .pack-row.done { background: #f0faf4; border-color: #b8ddc8; }
+    .pack-row.done .pack-row-name { text-decoration: line-through; color: var(--light); }
+    .pack-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--taupe); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.15s; }
+    .pack-row.done .pack-check { background: var(--green); border-color: var(--green); color: white; }
+    .pack-row-name { flex: 1; }
+    .badge-must { font-size: 10px; background: #f0faf4; color: var(--green); padding: 1px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .badge-hero { font-size: 10px; background: #fff3e8; color: var(--accent); padding: 1px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+    .badge-saved { font-size: 10px; background: #f3f0eb; color: var(--brown); padding: 1px 6px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
+
+    /* Progress */
+    .prog-bar { height: 5px; background: var(--border); border-radius: 3px; }
+    .prog-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 48px 20px; color: var(--light); }
+    .empty-icon { font-size: 40px; margin-bottom: 10px; }
+    .empty-text { font-size: 14px; margin-bottom: 14px; }
+
+    /* ── Inspiration Board ──────────────────────────── */
+    .inspo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .inspo-card { border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); background: white; cursor: pointer; transition: all 0.15s; }
+    .inspo-card:hover { border-color: var(--brown); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .inspo-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+    .inspo-img-placeholder { width: 100%; height: 200px; background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+    .inspo-tags { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .inspo-drop { border: 2px dashed var(--border); border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.15s; }
+    .inspo-drop:hover { border-color: var(--accent); background: #fdf8f3; }
+
+    /* DNA bars */
+    .dna-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+    .dna-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .dna-bar-label { width: 130px; font-size: 12px; flex-shrink: 0; }
+    .dna-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .dna-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .dna-pct { width: 36px; font-size: 12px; color: var(--light); text-align: right; flex-shrink: 0; }
+
+    /* Inspo tag modal */
+    .inspo-modal-img { width: 100%; max-height: 320px; object-fit: cover; border-radius: 10px; margin-bottom: 16px; display: block; }
+
+    /* Saved outfit card (in closet my-outfits tab) */
+    .saved-outfit-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.15s; }
+    .saved-outfit-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--brown); }
+    .saved-outfit-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+
+    /* Inspiration applied banner */
+    .inspo-applied-banner { background: linear-gradient(135deg, #fdf8f3, #f5ece0); border: 1px solid #e8d4c0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+
+    @media (max-width: 600px) {
+      .main { padding: 20px 14px; }
+      .row2 { grid-template-columns: 1fr; }
+      .vac-grid, .lug-grid { grid-template-columns: 1fr 1fr; }
+      .outfit-grid { grid-template-columns: 1fr; }
+      .inspo-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+
+const LUGGAGE_OPTIONS = [
+  { id: 'personal-only',   icon: '👝', label: 'Personal Item Only',         note: 'Ultra-light · 2–3 outfits', slots: 3  },
+  { id: 'carry-personal',  icon: '🎒', label: 'Carry-on + Personal Item',   note: 'Most common · 5–7 outfits', slots: 6  },
+  { id: 'carry-checked-s', icon: '🧳', label: 'Carry-on + Checked (Small)', note: '20" bag · 8–10 outfits',    slots: 10 },
+  { id: 'carry-checked-l', icon: '🧳', label: 'Carry-on + Checked (Large)', note: '28" bag · 12+ outfits',     slots: 14 },
+];
+
+const VACATION_TYPES = [
+  { id: 'beach',     icon: '🏖️', label: 'Beach / Resort'    },
+  { id: 'adventure', icon: '🌿', label: 'Adventure / Nature' },
+  { id: 'city',      icon: '🏙️', label: 'City Break'        },
+  { id: 'mixed',     icon: '✨', label: 'Mixed'              },
+];
+
+const ACTIVITIES = [
+  { id: 'sightseeing', icon: '🗺️', label: 'Sightseeing',       formality: 1 },
+  { id: 'beach',       icon: '🏖️', label: 'Beach',             formality: 0 },
+  { id: 'hiking',      icon: '🥾', label: 'Hiking',            formality: 0 },
+  { id: 'water',       icon: '🤿', label: 'Water Activities',  formality: 0 },
+  { id: 'cenotes',     icon: '💧', label: 'Cenotes',           formality: 0 },
+  { id: 'nature',      icon: '🌿', label: 'Jungle / Nature',   formality: 0 },
+  { id: 'dining',      icon: '🍽️', label: 'Fine Dining',       formality: 3 },
+  { id: 'nightlife',   icon: '🌙', label: 'Nightlife',         formality: 2 },
+  { id: 'shopping',    icon: '🛍️', label: 'Shopping',         formality: 1 },
+  { id: 'spa',         icon: '🧘', label: 'Spa / Wellness',    formality: 1 },
+  { id: 'business',    icon: '💼', label: 'Business',          formality: 3 },
+];
+
+const AESTHETICS = [
+  { id: 'old-money', label: 'Old Money',        color: '#8B7355', emoji: '👑' },
+  { id: 'artsy',     label: 'Artsy & Colorful', color: '#C17B4E', emoji: '🎨' },
+  { id: 'chic',      label: 'Chic',             color: '#6B6B7B', emoji: '✦'  },
+  { id: 'casual',    label: 'Casual Cool',      color: '#5A8A6A', emoji: '☀️' },
+  { id: 'bold',      label: 'Bold & Edgy',      color: '#A85252', emoji: '🔥' },
+];
+
+const ITEM_TYPES = [
+  { id: 'top',        label: 'Top',              role: 'top',      emoji: '👕' },
+  { id: 'bottom',     label: 'Bottom',           role: 'bottom',   emoji: '👖' },
+  { id: 'dress',      label: 'Dress / Jumpsuit', role: 'onePiece', emoji: '👗' },
+  { id: 'set',        label: 'Matching Set',     role: 'onePiece', emoji: '🧩' },
+  { id: 'outer',      label: 'Outerwear',        role: 'outer',    emoji: '🧥' },
+  { id: 'shoes',      label: 'Shoes',            role: 'shoes',    emoji: '👟' },
+  { id: 'bag',        label: 'Bag',              role: 'bag',      emoji: '👜' },
+  { id: 'accessory',  label: 'Accessory',        role: 'accessory',emoji: '💍' },
+  { id: 'swimwear',   label: 'Swimwear',         role: 'swim',     emoji: '👙' },
+  { id: 'activewear', label: 'Activewear',       role: 'active',   emoji: '🩳' },
+  { id: 'lounge',     label: 'PJs / Lounge',     role: 'lounge',   emoji: '🌙' },
+];
+
+const WMO_MAP = {
+  0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',
+  45:'Foggy',48:'Rime fog',51:'Light drizzle',53:'Moderate drizzle',55:'Dense drizzle',
+  61:'Slight rain',63:'Moderate rain',65:'Heavy rain',71:'Slight snow',73:'Moderate snow',
+  75:'Heavy snow',77:'Snow grains',80:'Slight showers',81:'Moderate showers',82:'Violent showers',
+  85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Thunderstorm + heavy hail'
+};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function calcDNA(board) {
+  if (!board || !board.length) return {};
+  const total = board.length;
+  const dna = {};
+  AESTHETICS.forEach(a => { dna[a.id] = 0; });
+  board.forEach(img => { (img.aesthetics || []).forEach(a => { if (dna[a] !== undefined) dna[a]++; }); });
+  AESTHETICS.forEach(a => { dna[a.id] = Math.round((dna[a.id] / total) * 100); });
+  return dna;
+}
+
+// ── WEATHER ──────────────────────────────────────────────────────────────────
+
+async function fetchWeatherData(destination, startDate, days) {
+  const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1`);
+  const geoData = await geoRes.json();
+  if (!geoData.results || !geoData.results.length) throw new Error('Location not found');
+  const { latitude, longitude, name, country } = geoData.results[0];
+  const fmt = d => d.toISOString().split('T')[0];
+  const start = new Date(startDate + 'T12:00:00');
+  const end = new Date(start); end.setDate(end.getDate() + Math.max(0, days - 1));
+  const edge = new Date(); edge.setDate(edge.getDate() + 15);
+  const isForecast = start <= edge;
+  let s2 = new Date(start), e2 = new Date(end);
+  if (!isForecast) { s2.setFullYear(s2.getFullYear()-1); e2.setFullYear(e2.getFullYear()-1); }
+  const url = isForecast
+    ? `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode&start_date=${fmt(s2)}&end_date=${fmt(e2)}&timezone=auto`
+    : `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode&start_date=${fmt(s2)}&end_date=${fmt(e2)}&timezone=auto`;
+  const res = await fetch(url); const data = await res.json();
+  const minTemps = data.daily.temperature_2m_min || [], maxTemps = data.daily.temperature_2m_max || [], codes = data.daily.weathercode || [];
+  return {
+    min: Math.round(Math.min(...minTemps)), max: Math.round(Math.max(...maxTemps)),
+    conditions: [...new Set(codes)].map(c => WMO_MAP[c]).filter(Boolean),
+    fetched: true, isForecast, location: `${name}, ${country}`
+  };
+}
+
+// ── ESSENTIALS GENERATOR ─────────────────────────────────────────────────────
+
+function generateEssentials(trip, weather) {
+  const acts = trip.activities || [];
+  const hasBeach  = acts.some(a => ['beach','water','cenotes'].includes(a));
+  const hasNature = acts.some(a => ['hiking','nature','cenotes'].includes(a));
+  const hasWater  = acts.some(a => ['water','cenotes'].includes(a));
+  const isHot     = weather ? weather.max >= 26 : false;
+  const isCold    = weather ? weather.min <= 12 : false;
+  const isRainy   = weather ? (weather.conditions || []).some(c => /rain|shower|drizzle/i.test(c)) : false;
+  const days      = trip.days || 3;
+  const sections  = {};
+  function add(label, items) {
+    const arr = items.filter(i => i[1] !== false);
+    if (arr.length) sections[label] = arr.map(([name,,ess]) => ({ name, essential: ess !== false }));
+  }
+  add('🌿 Skincare', [
+    ['Cleanser (travel size)',            true,                 true ],
+    ['Moisturizer (travel size)',         true,                 true ],
+    ['Facial mist / hydrating spray',     isHot,               true ],
+    ['Eye cream',                         true,                 false],
+    ['Serums / treatments',               days >= 4,           false],
+  ]);
+  add('💆 Haircare', [
+    ['Shampoo + conditioner (travel size)',true,               true ],
+    ['Leave-in conditioner',              true,                false],
+    ['Heat protectant',                   true,                false],
+    ['Dry shampoo',                       days >= 4,           false],
+    ['Hair ties & clips',                 true,                true ],
+    ['Wide-tooth comb / brush',           true,                true ],
+  ]);
+  add('🧴 Toiletries', [
+    ['Toothbrush + toothpaste',           true,                true ],
+    ['Deodorant',                         true,                true ],
+    ['Razor + shaving cream',             true,                false],
+    ['Feminine hygiene products',         true,                false],
+    ['Nail file / clippers',              true,                false],
+    ['Cotton rounds + Q-tips',            true,                true ],
+    ['Makeup bag + essentials',           true,                false],
+  ]);
+  add('🌞 Sun & Bug Protection', [
+    ['SPF 50 face sunscreen',             isHot||hasBeach||hasNature, true ],
+    ['SPF 50 body sunscreen',             hasBeach||isHot,     true ],
+    ['Biodegradable sunscreen (cenotes)', hasWater,            true ],
+    ['Lip balm with SPF',                 isHot||hasBeach,     true ],
+    ['After-sun / aloe vera gel',         hasBeach,            true ],
+    ['Insect repellent (DEET/Picaridin)', hasNature||hasBeach, true ],
+    ['Anti-itch cream',                   hasNature,           true ],
+    ['SPF 30 daily sunscreen',            !isHot&&!hasBeach,   false],
+  ]);
+  add('💊 Health & Wellness', [
+    ['Ibuprofen / pain reliever',         true,                true ],
+    ['Antihistamine / allergy meds',      true,                false],
+    ['Anti-nausea / motion sickness',     hasWater||acts.includes('hiking'), false],
+    ['Bandages + blister pads',           acts.includes('hiking')||acts.includes('sightseeing'), true],
+    ['Prescription medications',          true,                true ],
+    ['Electrolyte packets',               isHot||hasNature,    true ],
+    ['Melatonin',                         true,                false],
+    ['Probiotics',                        true,                false],
+  ]);
+  add('📱 Electronics', [
+    ['Phone charger / cable',             true,                true ],
+    ['Portable battery pack (10,000mAh)', true,                true ],
+    ['AirPods / headphones',              true,                true ],
+    ['Universal travel adapter',          true,                false],
+    ['Camera + charger',                  true,                false],
+    ['E-reader / Kindle',                 days >= 4,           false],
+    ['Outlet strip / multi-plug',         days >= 5,           false],
+    ['Laptop / tablet',                   true,                false],
+  ]);
+  const wgear = [
+    ...(isRainy ? [['Packable rain jacket / poncho',true,true],['Compact travel umbrella',true,true]] : []),
+    ...(isCold  ? [['Light down jacket',true,true],['Scarf',true,true],['Gloves',true,true]] : []),
+    [acts.includes('hiking') ? 'Sports cap / performance hat' : 'Packable beach hat', isHot||hasBeach, true],
+    ['Sunglasses',                        isHot||hasBeach,     true ],
+    ['Light cardigan / layer (for AC)',   isHot,               true ],
+  ];
+  add('🌧️ Weather & Accessories', wgear);
+  if (hasBeach || hasWater) {
+    add('🏖️ Beach & Water', [
+      ['Waterproof phone pouch',          true,                true ],
+      ['Quick-dry travel towel',          trip.vacationType !== 'beach', true],
+      ['Dry bag / waterproof backpack',   hasWater,            true ],
+      ['Water shoes',                     hasWater,            true ],
+      ['Rash guard / sun shirt',          hasWater,            true ],
+      ['Flip flops / sandals',            hasBeach,            true ],
+      ['Mesh beach bag',                  hasBeach,            false],
+      ['Snorkel gear (or plan to rent)',  acts.includes('water'), false],
+      ['GoPro / waterproof camera',       hasWater,            false],
+    ]);
+  }
+  add('📄 Documents & Money', [
+    ['Passport / government ID',          true,                true ],
+    ['Travel insurance info',             true,                true ],
+    ['Credit cards + local currency',     true,                true ],
+    ['Emergency contacts (printed)',      true,                false],
+    ['Hotel / Airbnb confirmation',       true,                true ],
+    ['Flight confirmation / e-ticket',    true,                true ],
+  ]);
+  add('🎒 Misc Comfort', [
+    ['Reusable water bottle',             true,                true ],
+    ['Travel neck pillow',                true,                false],
+    ['Eye mask + earplugs',               true,                false],
+    ['Snacks for travel day',             true,                false],
+    ['Small day bag / crossbody',         true,                false],
+    ['Laundry bag (dirty clothes)',       days >= 5,           false],
+    ['Travel-size stain remover',         days >= 5,           false],
+  ]);
+  return sections;
+}
+
+// ── OUTFIT BUILDER ───────────────────────────────────────────────────────────
+
+function generateOutfits(wardrobe, trip, weather) {
+  const tops    = wardrobe.filter(i => i.type === 'top');
+  const bottoms = wardrobe.filter(i => i.type === 'bottom');
+  const dresses = wardrobe.filter(i => i.type === 'dress' || i.type === 'set');
+  const shoes   = wardrobe.filter(i => i.type === 'shoes');
+  const outers  = wardrobe.filter(i => i.type === 'outer');
+  const heroIds = new Set(trip.heroItems || []);
+  const avgTemp = weather ? (weather.min + weather.max) / 2 : 22;
+  const needsOuter = avgTemp < 18;
+  const acts = trip.activities || [];
+  const avgFormality = acts.length
+    ? acts.reduce((s, aid) => { const a = ACTIVITIES.find(x => x.id === aid); return s + (a ? a.formality : 1); }, 0) / acts.length
+    : 1;
+  function scoreItem(item) {
+    let s = 0;
+    (item.aesthetics || []).forEach(a => { if (trip.aesthetics && trip.aesthetics[a]) s += 1.5; });
+    const tW = avgTemp >= 28 ? 1 : avgTemp >= 22 ? 2 : avgTemp >= 15 ? 3 : avgTemp >= 8 ? 4 : 5;
+    s += 2 - Math.abs((item.warmth || 2) - tW);
+    s += 2 - Math.abs((item.formality || 1) - avgFormality);
+    if (heroIds.has(item.id)) s += 5;
+    return s;
+  }
+  const bestOuter = (needsOuter && outers.length)
+    ? outers.reduce((b, o) => scoreItem(o) > scoreItem(b) ? o : b, outers[0]) : null;
+  function makeOutfit(pieces) {
+    const allP = bestOuter ? [...pieces, bestOuter] : pieces;
+    const score = allP.reduce((s, p) => s + scoreItem(p), 0) / allP.length;
+    return { pieces: allP, score, aesthetics: [...new Set(allP.flatMap(p => p.aesthetics || []))] };
+  }
+  const outfits = [];
+  dresses.forEach(d => { shoes.forEach(sh => outfits.push(makeOutfit([d, sh]))); if (!shoes.length) outfits.push(makeOutfit([d])); });
+  tops.forEach(top => { bottoms.forEach(bot => { shoes.forEach(sh => outfits.push(makeOutfit([top, bot, sh]))); if (!shoes.length) outfits.push(makeOutfit([top, bot])); }); });
+  const seen = new Set();
+  return outfits.filter(o => { const k = o.pieces.map(p => p.id).sort().join(','); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => b.score - a.score).slice(0, 10);
+}
+
+// ── ITEM THUMB ───────────────────────────────────────────────────────────────
+
+function ItemThumb({ item, w = 60, h = 75 }) {
+  const typeObj = ITEM_TYPES.find(t => t.id === item.type) || { emoji: '👔' };
+  if (item.photo) return <img src={item.photo} alt={item.name} style={{ width: w, height: h, objectFit: 'cover', borderRadius: 8, display: 'block' }} />;
+  return <div style={{ width: w, height: h, borderRadius: 8, background: '#f0ece6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(w * 0.42) }}>{typeObj.emoji}</div>;
+}
+
+// ── ITEM MODAL ───────────────────────────────────────────────────────────────
+
+function ItemModal({ item, onSave, onDelete, onClose }) {
+  const [form, setForm] = useState(item || { id: Date.now(), name: '', type: 'top', photo: null, aesthetics: [], warmth: 2, formality: 1, color: '', notes: '' });
+  const fileRef = useRef();
+  function upd(k, v) { setForm(f => ({ ...f, [k]: v })); }
+  function handlePhoto(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader(); r.onload = ev => upd('photo', ev.target.result); r.readAsDataURL(file);
+  }
+  function toggleAesthetic(id) { upd('aesthetics', form.aesthetics.includes(id) ? form.aesthetics.filter(a => a !== id) : [...form.aesthetics, id]); }
+  const warmthLabels = ['','☀️ Summer','🌤 Warm','🌥 Mild','🧣 Cool','❄️ Cold'];
+  const formalLabels = ['Casual','Smart casual','Semi-formal','Formal'];
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3 className="serif" style={{ fontSize: 22, fontWeight: 400, margin: 0 }}>{item ? 'Edit Item' : 'Add to Closet'}</h3>
+          <button onClick={onClose} className="btn btn-secondary btn-sm btn-icon">✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="fg">
+            {form.photo
+              ? <div style={{ position: 'relative' }}><img src={form.photo} alt="" className="photo-preview" /><button onClick={() => upd('photo', null)} className="btn btn-secondary btn-sm" style={{ position: 'absolute', top: 8, right: 8 }}>Remove</button></div>
+              : <div className="photo-drop" onClick={() => fileRef.current.click()}><div style={{ fontSize: 28, marginBottom: 6 }}>📷</div><div style={{ fontSize: 13, color: 'var(--light)' }}>Upload photo or screenshot</div><div style={{ fontSize: 11, color: 'var(--taupe)', marginTop: 3 }}>Tap to browse</div></div>
+            }
+            <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+          </div>
+          <div className="row2">
+            <div className="fg"><label className="fl">Name</label><input type="text" value={form.name} onChange={e => upd('name', e.target.value)} placeholder="e.g. White linen top" /></div>
+            <div className="fg"><label className="fl">Type</label><select value={form.type} onChange={e => upd('type', e.target.value)}>{ITEM_TYPES.map(t => <option key={t.id} value={t.id}>{t.emoji} {t.label}</option>)}</select></div>
+          </div>
+          <div className="fg">
+            <label className="fl">Aesthetic Vibe</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {AESTHETICS.map(a => <button key={a.id} onClick={() => toggleAesthetic(a.id)} className={`chip-btn ${form.aesthetics.includes(a.id) ? 'on' : ''}`}>{a.emoji} {a.label}</button>)}
+            </div>
+          </div>
+          <div className="row2">
+            <div className="fg"><label className="fl">Warmth · {warmthLabels[form.warmth]}</label><input type="range" min={1} max={5} value={form.warmth} onChange={e => upd('warmth', +e.target.value)} /></div>
+            <div className="fg"><label className="fl">Formality · {formalLabels[form.formality]}</label><input type="range" min={0} max={3} value={form.formality} onChange={e => upd('formality', +e.target.value)} /></div>
+          </div>
+          <div className="fg"><label className="fl">Color / Print</label><input type="text" value={form.color} onChange={e => upd('color', e.target.value)} placeholder="e.g. Cream, Navy, Floral print" /></div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            {item && <button onClick={() => onDelete(item.id)} className="btn btn-secondary" style={{ color: 'var(--accent)' }}>Delete</button>}
+            <button onClick={() => { if (form.name.trim()) onSave(form); }} className="btn btn-primary" style={{ flex: 1 }} disabled={!form.name.trim()}>{item ? 'Save Changes' : 'Add to Closet'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── OUTFIT SET MODAL (create / edit saved combination) ───────────────────────
+
+function OutfitSetModal({ outfitSet, wardrobe, onSave, onDelete, onClose }) {
+  const [name, setName] = useState(outfitSet ? outfitSet.name : '');
+  const [selectedIds, setSelectedIds] = useState(outfitSet ? outfitSet.itemIds : []);
+  const [filterType, setFilterType] = useState('all');
+  function toggle(id) { setSelectedIds(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]); }
+  const displayed = filterType === 'all' ? wardrobe : wardrobe.filter(i => i.type === filterType);
+  const selectedItems = wardrobe.filter(i => selectedIds.includes(i.id));
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3 className="serif" style={{ fontSize: 22, fontWeight: 400, margin: 0 }}>{outfitSet ? 'Edit Outfit Set' : 'Create Outfit Set'}</h3>
+          <button onClick={onClose} className="btn btn-secondary btn-sm btn-icon">✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="fg"><label className="fl">Set Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Cancún beach day, Dinner look, Airport outfit…" /></div>
+
+          {/* Selected pieces preview */}
+          {selectedItems.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 14px', background: '#fdfaf7', borderRadius: 10, marginBottom: 16, border: '1px solid var(--border)' }}>
+              {selectedItems.map(item => (
+                <div key={item.id} style={{ textAlign: 'center' }} onClick={() => toggle(item.id)}>
+                  <ItemThumb item={item} w={48} h={60} />
+                  <div style={{ fontSize: 9, color: 'var(--light)', marginTop: 2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="fg">
+            <label className="fl">Select Pieces ({selectedIds.length} selected)</label>
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+              <button onClick={() => setFilterType('all')} className={`chip-btn btn-sm ${filterType === 'all' ? 'on' : ''}`}>All</button>
+              {ITEM_TYPES.filter(t => wardrobe.some(i => i.type === t.id)).map(t => (
+                <button key={t.id} onClick={() => setFilterType(t.id)} className={`chip-btn btn-sm ${filterType === t.id ? 'on' : ''}`}>{t.emoji} {t.label}</button>
+              ))}
+            </div>
+            {wardrobe.length === 0
+              ? <div style={{ fontSize: 13, color: 'var(--light)', textAlign: 'center', padding: 20 }}>Add items to your closet first</div>
+              : <div className="wardrobe-grid">
+                  {displayed.map(item => (
+                    <div key={item.id} className={`item-card ${selectedIds.includes(item.id) ? 'selected-check' : ''}`} onClick={() => toggle(item.id)}>
+                      <div className="item-photo-box">
+                        {item.photo ? <img src={item.photo} alt={item.name} /> : <span style={{ fontSize: 28 }}>{ITEM_TYPES.find(t => t.id === item.type)?.emoji || '👔'}</span>}
+                        {selectedIds.includes(item.id) && <div className="item-check-badge">✓</div>}
+                      </div>
+                      <div className="item-info"><div className="item-name">{item.name || 'Unnamed'}</div><div className="item-type">{ITEM_TYPES.find(t => t.id === item.type)?.label}</div></div>
+                    </div>
+                  ))}
+                </div>
+            }
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            {outfitSet && <button onClick={() => onDelete(outfitSet.id)} className="btn btn-secondary" style={{ color: 'var(--accent)' }}>Delete</button>}
+            <button
+              onClick={() => { if (name.trim() && selectedIds.length > 0) onSave({ id: outfitSet ? outfitSet.id : Date.now(), name: name.trim(), itemIds: selectedIds }); }}
+              className="btn btn-primary" style={{ flex: 1 }}
+              disabled={!name.trim() || selectedIds.length === 0}
+            >
+              {outfitSet ? 'Save Set' : 'Create Set'} {selectedIds.length > 0 ? `(${selectedIds.length} pieces)` : ''}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── INSPIRATION TAG MODAL ─────────────────────────────────────────────────────
+
+function InspirationTagModal({ image, onSave, onDelete, onClose }) {
+  const [tags, setTags] = useState(image.aesthetics || []);
+  function toggle(id) { setTags(t => t.includes(id) ? t.filter(x => x !== id) : [...t, id]); }
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3 className="serif" style={{ fontSize: 20, fontWeight: 400, margin: 0 }}>Tag the vibe</h3>
+          <button onClick={onClose} className="btn btn-secondary btn-sm btn-icon">✕</button>
+        </div>
+        <div className="modal-body">
+          {image.photo && <img src={image.photo} alt="" className="inspo-modal-img" />}
+          <div className="fg">
+            <label className="fl">What aesthetic does this capture?</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {AESTHETICS.map(a => (
+                <button key={a.id} onClick={() => toggle(a.id)} className={`chip-btn ${tags.includes(a.id) ? 'on' : ''}`} style={{ fontSize: 14, padding: '10px 18px' }}>
+                  {a.emoji} {a.label}
+                </button>
+              ))}
+            </div>
+            {tags.length === 0 && <div style={{ fontSize: 12, color: 'var(--light)', marginTop: 8 }}>Select at least one aesthetic to add this image to your DNA</div>}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => onDelete(image.id)} className="btn btn-secondary" style={{ color: 'var(--accent)' }}>Remove image</button>
+            <button onClick={() => onSave({ ...image, aesthetics: tags })} className="btn btn-primary" style={{ flex: 1 }} disabled={tags.length === 0}>Save Tags</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CLOSET VIEW ───────────────────────────────────────────────────────────────
+
+function ClosetView({ wardrobe, setWardrobe, savedOutfits, setSavedOutfits }) {
+  const [tab, setTab] = useState('items');
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [showSetModal, setShowSetModal] = useState(false);
+  const [editSet, setEditSet] = useState(null);
+  const [filterType, setFilterType] = useState('all');
+  const [search, setSearch] = useState('');
+
+  const filtered = wardrobe.filter(item => {
+    if (filterType !== 'all' && item.type !== filterType) return false;
+    if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  function saveItem(form) {
+    setWardrobe(w => { const idx = w.findIndex(i => i.id === form.id); if (idx >= 0) { const u = [...w]; u[idx] = form; return u; } return [...w, form]; });
+    setShowItemModal(false); setEditItem(null);
+  }
+  function deleteItem(id) { setWardrobe(w => w.filter(i => i.id !== id)); setShowItemModal(false); setEditItem(null); }
+  function saveSet(set) {
+    setSavedOutfits(s => { const idx = s.findIndex(x => x.id === set.id); if (idx >= 0) { const u = [...s]; u[idx] = set; return u; } return [...s, set]; });
+    setShowSetModal(false); setEditSet(null);
+  }
+  function deleteSet(id) { setSavedOutfits(s => s.filter(x => x.id !== id)); setShowSetModal(false); setEditSet(null); }
+
+  const counts = useMemo(() => {
+    const c = { all: wardrobe.length }; ITEM_TYPES.forEach(t => { c[t.id] = wardrobe.filter(i => i.type === t.id).length; }); return c;
+  }, [wardrobe]);
+
+  return (
+    <div>
+      <div className="sec-head">
+        <h1 className="sec-title serif">My Closet</h1>
+        <button onClick={() => { if (tab === 'items') { setEditItem(null); setShowItemModal(true); } else { setEditSet(null); setShowSetModal(true); } }} className="btn btn-primary">
+          {tab === 'items' ? '+ Add Item' : '+ New Set'}
+        </button>
+      </div>
+
+      <div className="sub-tabs">
+        <button className={`sub-tab ${tab === 'items' ? 'active' : ''}`} onClick={() => setTab('items')}>👗 Items {wardrobe.length > 0 ? `(${wardrobe.length})` : ''}</button>
+        <button className={`sub-tab ${tab === 'sets' ? 'active' : ''}`} onClick={() => setTab('sets')}>🧩 My Outfits {savedOutfits.length > 0 ? `(${savedOutfits.length})` : ''}</button>
+      </div>
+
+      {/* ── Items tab ── */}
+      {tab === 'items' && (
+        <div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍  Search…" style={{ width: 200, flex: '0 0 auto' }} />
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+              <button onClick={() => setFilterType('all')} className={`chip-btn ${filterType === 'all' ? 'on' : ''}`}>All ({counts.all})</button>
+              {ITEM_TYPES.filter(t => counts[t.id] > 0).map(t => (
+                <button key={t.id} onClick={() => setFilterType(t.id)} className={`chip-btn ${filterType === t.id ? 'on' : ''}`}>{t.emoji} {t.label} ({counts[t.id]})</button>
+              ))}
+            </div>
+          </div>
+          {filtered.length === 0
+            ? <div className="empty"><div className="empty-icon">👗</div><div className="empty-text">{wardrobe.length === 0 ? 'Your closet is empty — add your first piece!' : 'No items match your filter'}</div>{wardrobe.length === 0 && <button onClick={() => setShowItemModal(true)} className="btn btn-primary">Add First Item</button>}</div>
+            : <div className="wardrobe-grid">
+                {filtered.map(item => (
+                  <div key={item.id} className="item-card" onClick={() => { setEditItem(item); setShowItemModal(true); }}>
+                    <div className="item-photo-box">
+                      {item.photo ? <img src={item.photo} alt={item.name} /> : <span style={{ fontSize: 32 }}>{ITEM_TYPES.find(t => t.id === item.type)?.emoji || '👔'}</span>}
+                    </div>
+                    <div className="item-info">
+                      <div className="item-name">{item.name || 'Unnamed'}</div>
+                      <div className="item-type">{ITEM_TYPES.find(t => t.id === item.type)?.label}{item.color ? ` · ${item.color}` : ''}</div>
+                      {item.aesthetics && item.aesthetics.length > 0 && (
+                        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginTop: 4 }}>
+                          {item.aesthetics.slice(0,2).map(a => { const ae = AESTHETICS.find(x => x.id === a); return ae ? <span key={a} style={{ fontSize: 9, background: ae.color+'22', color: ae.color, padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>{ae.label}</span> : null; })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+          }
+        </div>
+      )}
+
+      {/* ── My Outfits (sets) tab ── */}
+      {tab === 'sets' && (
+        <div>
+          {savedOutfits.length === 0
+            ? <div className="empty">
+                <div className="empty-icon">🧩</div>
+                <div className="empty-text">No outfit sets yet — create combinations you love and reuse them for any trip</div>
+                <button onClick={() => { setEditSet(null); setShowSetModal(true); }} className="btn btn-primary">Create First Set</button>
+              </div>
+            : <div className="outfit-grid">
+                {savedOutfits.map(set => {
+                  const pieces = wardrobe.filter(i => set.itemIds.includes(i.id));
+                  return (
+                    <div key={set.id} className="saved-outfit-card" onClick={() => { setEditSet(set); setShowSetModal(true); }}>
+                      <div className="saved-outfit-name">{set.name}</div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 10 }}>
+                        {pieces.map((p, pi) => { const sz = p.type === 'shoes' ? 44 : 56; return <div key={pi} className="o-piece"><div className="o-piece-img" style={{ width: sz, height: sz*1.25 }}>{p.photo ? <img src={p.photo} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: sz*0.42 }}>{ITEM_TYPES.find(t => t.id === p.type)?.emoji || '👔'}</span>}</div><div className="o-piece-label" style={{ width: sz }}>{p.name || ITEM_TYPES.find(t => t.id === p.type)?.label}</div></div>; })}
+                        {pieces.length === 0 && <div style={{ fontSize: 12, color: 'var(--light)' }}>Items were removed from closet</div>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--light)' }}>{pieces.length} piece{pieces.length !== 1 ? 's' : ''} · tap to edit</div>
+                    </div>
+                  );
+                })}
+              </div>
+          }
+        </div>
+      )}
+
+      {showItemModal && <ItemModal item={editItem} onSave={saveItem} onDelete={deleteItem} onClose={() => { setShowItemModal(false); setEditItem(null); }} />}
+      {showSetModal && <OutfitSetModal outfitSet={editSet} wardrobe={wardrobe} onSave={saveSet} onDelete={deleteSet} onClose={() => { setShowSetModal(false); setEditSet(null); }} />}
+    </div>
+  );
+}
+
+// ── INSPIRATION VIEW ──────────────────────────────────────────────────────────
+
+function InspirationView({ board, setBoard }) {
+  const [tagModal, setTagModal] = useState(null);
+  const fileRef = useRef();
+
+  function handleUpload(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const r = new FileReader();
+      r.onload = ev => {
+        setBoard(b => [...b, { id: Date.now() + Math.random(), photo: ev.target.result, aesthetics: [] }]);
+      };
+      r.readAsDataURL(file);
+    });
+    e.target.value = '';
+  }
+
+  function saveTag(updated) {
+    setBoard(b => b.map(img => img.id === updated.id ? updated : img));
+    setTagModal(null);
+  }
+  function deleteImage(id) {
+    setBoard(b => b.filter(img => img.id !== id));
+    setTagModal(null);
+  }
+
+  const dna = useMemo(() => calcDNA(board), [board]);
+  const taggedCount = board.filter(img => img.aesthetics && img.aesthetics.length > 0).length;
+
+  return (
+    <div>
+      <div className="sec-head">
+        <div>
+          <h1 className="sec-title serif">Inspiration Board</h1>
+          <div style={{ fontSize: 13, color: 'var(--light)', marginTop: 2 }}>Upload Pinterest screenshots or any style references · tag the vibe · apply to your trips</div>
+        </div>
+        <button onClick={() => fileRef.current.click()} className="btn btn-primary">+ Add Images</button>
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleUpload} style={{ display: 'none' }} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: board.length > 0 ? '1fr 280px' : '1fr', gap: 24, alignItems: 'start' }}>
+        {/* Left: image grid */}
+        <div>
+          {board.length === 0
+            ? <div className="inspo-drop" onClick={() => fileRef.current.click()}>
+                <div style={{ fontSize: 40, marginBottom: 10 }}>🖼️</div>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 6 }}>Drop your inspiration here</div>
+                <div style={{ fontSize: 13, color: 'var(--light)', marginBottom: 16 }}>Pinterest screenshots · blog photos · magazine clips · anything that represents how you want to look</div>
+                <button className="btn btn-primary">Browse files</button>
+              </div>
+            : <div>
+                <div style={{ fontSize: 13, color: 'var(--light)', marginBottom: 14 }}>{board.length} image{board.length !== 1 ? 's' : ''} · {taggedCount} tagged — tap any image to tag its vibe</div>
+                <div className="inspo-grid">
+                  {board.map(img => (
+                    <div key={img.id} className="inspo-card" onClick={() => setTagModal(img)}>
+                      {img.photo ? <img src={img.photo} alt="" className="inspo-img" /> : <div className="inspo-img-placeholder">🖼️</div>}
+                      <div className="inspo-tags">
+                        {img.aesthetics && img.aesthetics.length > 0
+                          ? img.aesthetics.map(a => { const ae = AESTHETICS.find(x => x.id === a); return ae ? <span key={a} style={{ fontSize: 10, background: ae.color+'22', color: ae.color, padding: '2px 7px', borderRadius: 10, fontWeight: 500 }}>{ae.emoji} {ae.label}</span> : null; })
+                          : <span style={{ fontSize: 11, color: 'var(--light)' }}>Tap to tag vibe ✦</span>
+                        }
+                      </div>
+                    </div>
+                  ))}
+                  {/* Add more button */}
+                  <div style={{ border: '2px dashed var(--border)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, cursor: 'pointer', color: 'var(--light)', fontSize: 13, flexDirection: 'column', gap: 6 }} onClick={() => fileRef.current.click()}>
+                    <span style={{ fontSize: 24 }}>+</span>
+                    <span>Add more</span>
+                  </div>
+                </div>
+              </div>
+          }
+        </div>
+
+        {/* Right: DNA panel */}
+        {board.length > 0 && (
+          <div>
+            <div className="dna-section">
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Your Style DNA</div>
+              <div style={{ fontSize: 12, color: 'var(--light)', marginBottom: 16 }}>
+                {taggedCount === 0 ? 'Tag your images to reveal your aesthetic mix' : `Based on ${taggedCount} tagged image${taggedCount !== 1 ? 's' : ''}`}
+              </div>
+              {AESTHETICS.map(a => (
+                <div key={a.id} className="dna-bar-row">
+                  <div className="dna-bar-label">{a.emoji} {a.label}</div>
+                  <div className="dna-bar-track">
+                    <div className="dna-bar-fill" style={{ width: `${dna[a.id] || 0}%`, background: a.color }}></div>
+                  </div>
+                  <div className="dna-pct">{dna[a.id] || 0}%</div>
+                </div>
+              ))}
+              {taggedCount > 0 && (
+                <div style={{ marginTop: 14, padding: '10px 14px', background: 'linear-gradient(135deg,#fdf8f3,#f5ece0)', borderRadius: 8, fontSize: 12, color: 'var(--brown)', lineHeight: 1.5 }}>
+                  ✦ Your dominant aesthetic is <strong>{AESTHETICS.reduce((best, a) => (dna[a.id]||0) > (dna[best.id]||0) ? a : best, AESTHETICS[0]).label}</strong>.
+                  When planning a trip, click <strong>"Apply from Board"</strong> in the style step to auto-fill your vibe.
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginTop: 14, background: 'white', border: '1px solid var(--border)', borderRadius: 14, padding: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--mid)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>How to use</div>
+              <div style={{ fontSize: 12, color: 'var(--light)', lineHeight: 1.7 }}>
+                1. Upload screenshots from Pinterest, blogs, or any style source<br/>
+                2. Tap each image → tag its aesthetic vibe<br/>
+                3. When planning a trip → Style step → click <strong>Apply from Board</strong><br/>
+                4. Your style mix auto-fills the sliders ✦
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {tagModal && <InspirationTagModal image={tagModal} onSave={saveTag} onDelete={deleteImage} onClose={() => setTagModal(null)} />}
+    </div>
+  );
+}
+
+// ── TRIP SETUP VIEW ───────────────────────────────────────────────────────────
+
+function TripSetupView({ wardrobe, savedOutfits, inspirationBoard, onGeneratePack }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    destination: '', startDate: '', endDate: '',
+    luggage: 'carry-personal', vacationType: '', activities: [],
+    heroItems: [], heroSets: [],
+    weather: null, weatherLoading: false, weatherError: null,
+    aesthetics: { 'old-money': 0, artsy: 0, chic: 50, casual: 50, bold: 0 },
+    inspoApplied: false,
+  });
+
+  const days = useMemo(() => {
+    if (!form.startDate || !form.endDate) return 0;
+    return Math.max(1, Math.round((new Date(form.endDate+'T12:00:00') - new Date(form.startDate+'T12:00:00')) / 86400000) + 1);
+  }, [form.startDate, form.endDate]);
+
+  function upd(k, v) { setForm(f => ({ ...f, [k]: v })); }
+  function toggleActivity(id) { upd('activities', form.activities.includes(id) ? form.activities.filter(a => a !== id) : [...form.activities, id]); }
+  function toggleHero(id) { upd('heroItems', form.heroItems.includes(id) ? form.heroItems.filter(i => i !== id) : [...form.heroItems, id]); }
+  function toggleHeroSet(id) { upd('heroSets', form.heroSets.includes(id) ? form.heroSets.filter(i => i !== id) : [...form.heroSets, id]); }
+
+  function applyInspirationDNA() {
+    const dna = calcDNA(inspirationBoard);
+    setForm(f => ({ ...f, aesthetics: { ...f.aesthetics, ...dna }, inspoApplied: true }));
+  }
+
+  async function doFetch() {
+    if (!form.destination || !form.startDate) return;
+    upd('weatherLoading', true); upd('weatherError', null);
+    try {
+      const w = await fetchWeatherData(form.destination, form.startDate, days || 3);
+      setForm(f => ({ ...f, weather: w, weatherLoading: false }));
+    } catch (e) { setForm(f => ({ ...f, weatherLoading: false, weatherError: e.message })); }
+  }
+
+  useEffect(() => {
+    if (form.destination && form.startDate && days > 0) {
+      setForm(f => ({ ...f, weather: null, weatherError: null }));
+      const t = setTimeout(doFetch, 900); return () => clearTimeout(t);
+    }
+  }, [form.destination, form.startDate, form.endDate]);
+
+  const canStep2 = form.destination && form.startDate && form.endDate && days > 0;
+  const canStep3 = canStep2 && !!form.vacationType;
+  const boardDNA = useMemo(() => calcDNA(inspirationBoard), [inspirationBoard]);
+  const hasTaggedInspo = inspirationBoard.some(img => img.aesthetics && img.aesthetics.length > 0);
+
+  return (
+    <div style={{ maxWidth: 620, margin: '0 auto' }}>
+      <div className="sec-head"><h1 className="sec-title serif">Plan a Trip</h1></div>
+      <div className="steps">
+        {['Destination', 'Vibe', 'Anchor Pieces'].map((lbl, i) => (
+          <div key={i} className={`step ${step > i+1 ? 'done' : step === i+1 ? 'active' : ''}`}>
+            <div className="step-dot">{step > i+1 ? '✓' : i+1}</div>
+            <span className="step-label">{lbl}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Step 1 ── */}
+      {step === 1 && (
+        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid var(--border)' }}>
+          <div className="fg"><label className="fl">Where are you going?</label><input type="text" value={form.destination} onChange={e => upd('destination', e.target.value)} placeholder="e.g. Cancún, Mexico" style={{ fontSize: 15 }} /></div>
+          <div className="row2">
+            <div className="fg"><label className="fl">Departure</label><input type="date" value={form.startDate} onChange={e => upd('startDate', e.target.value)} /></div>
+            <div className="fg"><label className="fl">Return</label><input type="date" value={form.endDate} onChange={e => upd('endDate', e.target.value)} min={form.startDate} /></div>
+          </div>
+          {days > 0 && <div style={{ fontSize: 13, color: 'var(--light)', marginBottom: 14 }}>✦ {days}-day trip</div>}
+          {form.weatherLoading && <div className="w-badge" style={{ marginBottom: 14 }}>🌍 Fetching weather for {form.destination}…</div>}
+          {form.weather && !form.weatherLoading && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
+              <div className="w-badge">🌡️ {form.weather.min}°–{form.weather.max}°C</div>
+              {form.weather.conditions.slice(0,3).map(c => <div key={c} className="w-badge">{c}</div>)}
+              <span style={{ fontSize: 11, color: 'var(--light)' }}>{form.weather.isForecast ? 'Live forecast' : 'Last year\'s data'} · {form.weather.location}</span>
+            </div>
+          )}
+          {form.weatherError && <div style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 12 }}>⚠️ Weather unavailable — you can still continue</div>}
+          <div className="fg">
+            <label className="fl">Luggage</label>
+            <div className="lug-grid">
+              {LUGGAGE_OPTIONS.map(l => (
+                <div key={l.id} className={`lug-card ${form.luggage === l.id ? 'sel' : ''}`} onClick={() => upd('luggage', l.id)}>
+                  <div style={{ fontSize: 18, marginBottom: 3 }}>{l.icon}</div>
+                  <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 2 }}>{l.label}</div>
+                  <div style={{ fontSize: 11, opacity: 0.65 }}>{l.note}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setStep(2)} disabled={!canStep2}>Next: Set the Vibe →</button>
+        </div>
+      )}
+
+      {/* ── Step 2 ── */}
+      {step === 2 && (
+        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid var(--border)' }}>
+          <div className="fg">
+            <label className="fl">Vacation Type</label>
+            <div className="vac-grid">
+              {VACATION_TYPES.map(v => <div key={v.id} className={`vac-card ${form.vacationType === v.id ? 'sel' : ''}`} onClick={() => upd('vacationType', v.id)}><div className="vac-icon">{v.icon}</div><div className="vac-label">{v.label}</div></div>)}
+            </div>
+          </div>
+          <div className="fg">
+            <label className="fl">Activities</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {ACTIVITIES.map(a => <button key={a.id} onClick={() => toggleActivity(a.id)} className={`chip-btn ${form.activities.includes(a.id) ? 'on-accent' : ''}`}>{a.icon} {a.label}</button>)}
+            </div>
+          </div>
+
+          {/* Style mix — with inspiration board option */}
+          <div className="fg">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label className="fl" style={{ margin: 0 }}>Style Mix</label>
+              {hasTaggedInspo && (
+                <button onClick={applyInspirationDNA} className="btn btn-sm" style={{ background: form.inspoApplied ? '#fdf8f3' : 'white', border: '1px solid #e8d4c0', color: '#8B7355', fontSize: 11, padding: '5px 12px', borderRadius: 20 }}>
+                  🖼️ {form.inspoApplied ? 'Board applied ✓' : 'Apply from Board'}
+                </button>
+              )}
+            </div>
+
+            {form.inspoApplied && (
+              <div className="inspo-applied-banner">
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {inspirationBoard.slice(0,4).map(img => img.photo ? <img key={img.id} src={img.photo} alt="" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 6 }} /> : null)}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--brown)', flex: 1 }}>Style imported from your inspiration board</div>
+                <button onClick={() => setForm(f => ({ ...f, inspoApplied: false, aesthetics: { 'old-money': 0, artsy: 0, chic: 50, casual: 50, bold: 0 } }))} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--light)' }}>reset</button>
+              </div>
+            )}
+
+            {AESTHETICS.map(a => (
+              <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <span style={{ width: 130, fontSize: 12, color: 'var(--mid)' }}>{a.emoji} {a.label}</span>
+                <input type="range" min={0} max={100} value={form.aesthetics[a.id] || 0} onChange={e => setForm(f => ({ ...f, aesthetics: { ...f.aesthetics, [a.id]: +e.target.value }, inspoApplied: false }))} />
+                <span style={{ width: 32, fontSize: 12, color: 'var(--light)', textAlign: 'right' }}>{form.aesthetics[a.id] || 0}%</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={() => setStep(1)}>← Back</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => setStep(3)} disabled={!canStep3}>{(wardrobe.length > 0 || savedOutfits.length > 0) ? 'Next: Anchor Pieces →' : 'Generate Packing List →'}</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Step 3: Anchor pieces ── */}
+      {step === 3 && (
+        <div style={{ background: 'white', borderRadius: 16, padding: 24, border: '1px solid var(--border)' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontWeight: 500, marginBottom: 4 }}>Pin your must-brings</div>
+            <div style={{ fontSize: 13, color: 'var(--light)' }}>Select specific items or saved outfit sets — outfits and packing list will be built around them. Or skip to auto-generate.</div>
+          </div>
+
+          {/* Saved sets first */}
+          {savedOutfits.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--light)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>🧩 My Outfit Sets</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {savedOutfits.map(set => {
+                  const pieces = wardrobe.filter(i => set.itemIds.includes(i.id)).slice(0, 4);
+                  return (
+                    <div key={set.id} onClick={() => toggleHeroSet(set.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${form.heroSets.includes(set.id) ? '#8B7355' : 'var(--border)'}`, background: form.heroSets.includes(set.id) ? '#fdfaf7' : 'white', cursor: 'pointer', transition: 'all 0.15s' }}>
+                      <div style={{ display: 'flex', gap: 4 }}>{pieces.map((p, pi) => <ItemThumb key={pi} item={p} w={32} h={40} />)}</div>
+                      <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{set.name}</div>
+                      {form.heroSets.includes(set.id) && <span style={{ fontSize: 11, color: 'var(--brown)', fontWeight: 600 }}>★ anchored</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Individual items */}
+          {wardrobe.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--light)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>👗 Individual Items</div>
+              <div className="wardrobe-grid" style={{ marginBottom: 20 }}>
+                {wardrobe.map(item => (
+                  <div key={item.id} className={`item-card ${form.heroItems.includes(item.id) ? 'hero' : ''}`} onClick={() => toggleHero(item.id)}>
+                    <div className="item-photo-box">
+                      {item.photo ? <img src={item.photo} alt={item.name} /> : <span style={{ fontSize: 28 }}>{ITEM_TYPES.find(t => t.id === item.type)?.emoji || '👔'}</span>}
+                      {form.heroItems.includes(item.id) && <div className="item-check-badge">★</div>}
+                    </div>
+                    <div className="item-info">
+                      <div className="item-name">{item.name || 'Unnamed'}</div>
+                      <div className="item-type">{ITEM_TYPES.find(t => t.id === item.type)?.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {wardrobe.length === 0 && savedOutfits.length === 0 && (
+            <div className="empty" style={{ padding: '20px 0' }}><div style={{ fontSize: 13, color: 'var(--light)' }}>No items yet — outfits will be style suggestions only</div></div>
+          )}
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={() => setStep(2)}>← Back</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => onGeneratePack({ ...form, days })} disabled={!canStep3}>✨ Generate Packing List</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── PACKING LIST VIEW ─────────────────────────────────────────────────────────
+
+function PackingListView({ trip, wardrobe, savedOutfits, inspirationBoard, onBack }) {
+  const [checked, setChecked] = useState({});
+  const [tab, setTab] = useState('outfits');
+  const weather = trip.weather;
+  const luggageOpt = LUGGAGE_OPTIONS.find(l => l.id === trip.luggage) || LUGGAGE_OPTIONS[1];
+  const heroIds = trip.heroItems || [];
+  const heroSetIds = trip.heroSets || [];
+
+  const outfits = useMemo(() => generateOutfits(wardrobe, trip, weather), [wardrobe, trip, weather]);
+  const essentials = useMemo(() => generateEssentials(trip, weather), [trip, weather]);
+
+  // Clothing pack = hero items + items from hero sets + top outfit items, up to slot cap
+  const clothingPack = useMemo(() => {
+    const heroItems = wardrobe.filter(i => heroIds.includes(i.id));
+    const heroSetItems = [];
+    heroSetIds.forEach(sid => {
+      const set = savedOutfits.find(s => s.id === sid);
+      if (set) set.itemIds.forEach(iid => { if (!heroIds.includes(iid) && !heroSetItems.find(x => x.id === iid)) { const item = wardrobe.find(i => i.id === iid); if (item) heroSetItems.push(item); } });
+    });
+    const pinnedIds = new Set([...heroIds, ...heroSetItems.map(i => i.id)]);
+    const extra = [];
+    outfits.slice(0, luggageOpt.slots).forEach(o => {
+      o.pieces.forEach(p => { if (!pinnedIds.has(p.id) && !extra.find(x => x.id === p.id)) extra.push(p); });
+    });
+    return [...heroItems, ...heroSetItems, ...extra];
+  }, [wardrobe, heroIds, heroSetIds, savedOutfits, outfits, luggageOpt]);
+
+  // Saved outfit sets that are anchored (selected as hero sets)
+  const anchoredSets = savedOutfits.filter(s => heroSetIds.includes(s.id));
+
+  function toggleCheck(k) { setChecked(c => ({ ...c, [k]: !c[k] })); }
+
+  const totalEssentials = Object.values(essentials).reduce((s, arr) => s + arr.length, 0);
+  const checkedCount = Object.values(checked).filter(Boolean).length;
+  const totalItems = totalEssentials + clothingPack.length;
+
+  const startFmt = trip.startDate ? new Date(trip.startDate+'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+  const endFmt   = trip.endDate   ? new Date(trip.endDate  +'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+
+  // Board images for reference
+  const taggedInspo = inspirationBoard.filter(img => img.aesthetics && img.aesthetics.length > 0);
+
+  return (
+    <div>
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--light)', padding: 0, marginBottom: 6 }}>← Back to trip setup</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 className="sec-title serif" style={{ marginBottom: 4 }}>{trip.destination}</h1>
+            <div style={{ fontSize: 13, color: 'var(--light)' }}>{trip.days} days · {startFmt}{endFmt ? ` – ${endFmt}` : ''} · {luggageOpt.label}</div>
+          </div>
+          {weather && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="w-badge">🌡️ {weather.min}°–{weather.max}°C</div>
+              {weather.conditions.slice(0,2).map(c => <div key={c} className="w-badge">{c}</div>)}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ flex: 1 }}><div style={{ fontSize: 11, color: 'var(--light)', marginBottom: 5 }}>Packing progress</div><div className="prog-bar"><div className="prog-fill" style={{ width: totalItems > 0 ? `${(checkedCount/totalItems)*100}%` : '0%' }}></div></div></div>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>{checkedCount}<span style={{ color: 'var(--light)', fontWeight: 400 }}>/{totalItems}</span></div>
+        {checkedCount === totalItems && totalItems > 0 && <span style={{ fontSize: 18 }}>🎉</span>}
+      </div>
+
+      {/* Inspiration reference strip */}
+      {taggedInspo.length > 0 && trip.inspoApplied && (
+        <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--light)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>🖼️ Your Style Reference</div>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+            {taggedInspo.map(img => (
+              <div key={img.id} style={{ flexShrink: 0 }}>
+                <img src={img.photo} alt="" style={{ width: 72, height: 96, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="tab-bar">
+        <button className={`tab-btn ${tab === 'outfits' ? 'active' : ''}`} onClick={() => setTab('outfits')}>👗 Outfits</button>
+        <button className={`tab-btn ${tab === 'clothes' ? 'active' : ''}`} onClick={() => setTab('clothes')}>🧺 Clothes ({clothingPack.length})</button>
+        <button className={`tab-btn ${tab === 'essentials' ? 'active' : ''}`} onClick={() => setTab('essentials')}>🎒 Essentials ({totalEssentials})</button>
+      </div>
+
+      {/* ── Outfits tab ── */}
+      {tab === 'outfits' && (
+        <div>
+          {/* Anchored sets first */}
+          {anchoredSets.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div className="pack-section-label">⭐ Your Anchored Sets</div>
+              <div className="outfit-grid">
+                {anchoredSets.map(set => {
+                  const pieces = wardrobe.filter(i => set.itemIds.includes(i.id));
+                  return (
+                    <div key={set.id} className="outfit-card saved-set">
+                      <div style={{ fontSize: 11, color: 'var(--brown)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{set.name}</span><span className="badge-saved">saved set</span>
+                      </div>
+                      <div className="outfit-pieces">
+                        {pieces.map((p, pi) => { const sz = p.type === 'shoes' ? 46 : 58; return <div key={pi} className="o-piece"><div className="o-piece-img" style={{ width: sz, height: sz*1.25 }}>{p.photo ? <img src={p.photo} alt={p.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <span style={{ fontSize: sz*0.42 }}>{ITEM_TYPES.find(t => t.id === p.type)?.emoji || '👔'}</span>}</div><div className="o-piece-label" style={{ width: sz }}>{p.name || ITEM_TYPES.find(t => t.id === p.type)?.label}</div></div>; })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Algorithm-generated outfits */}
+          <div className="pack-section-label" style={{ marginBottom: 12 }}>✦ Suggested Outfits</div>
+          {outfits.length === 0
+            ? <div className="empty"><div className="empty-icon">👗</div><div className="empty-text">Add tops, bottoms, dresses, and shoes to your closet to get outfit suggestions</div></div>
+            : <div className="outfit-grid">
+                {outfits.map((outfit, idx) => (
+                  <div key={idx} className="outfit-card">
+                    <div style={{ fontSize: 11, color: 'var(--light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Look {idx+1}</span>
+                      <span style={{ color: idx < 3 ? 'var(--accent)' : 'var(--taupe)' }}>{idx < 3 ? '★ Top pick' : `Score ${outfit.score.toFixed(1)}`}</span>
+                    </div>
+                    <div className="outfit-pieces">
+                      {outfit.pieces.map((p, pi) => { const sz = p.type === 'shoes' ? 48 : p.type === 'outer' ? 68 : 60; return <div key={pi} className="o-piece"><div className="o-piece-img" style={{ width: sz, height: sz*1.25 }}>{p.photo ? <img src={p.photo} alt={p.name} style={{ width:'100%', height:'100%', objectFit:'cover' }} /> : <span style={{ fontSize: sz*0.42 }}>{ITEM_TYPES.find(t => t.id === p.type)?.emoji || '👔'}</span>}</div><div className="o-piece-label" style={{ width: sz }}>{p.name || ITEM_TYPES.find(t => t.id === p.type)?.label}</div></div>; })}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
+                      {outfit.aesthetics.slice(0,3).map(a => { const ae = AESTHETICS.find(x => x.id === a); return ae ? <span key={a} style={{ fontSize: 10, background: ae.color+'22', color: ae.color, padding: '2px 7px', borderRadius: 10, fontWeight: 500 }}>{ae.emoji} {ae.label}</span> : null; })}
+                      {heroIds.length > 0 && outfit.pieces.some(p => heroIds.includes(p.id)) && <span style={{ fontSize: 10, background: '#fff3e8', color: 'var(--accent)', padding: '2px 7px', borderRadius: 10, fontWeight: 600 }}>★ hero piece</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+          }
+        </div>
+      )}
+
+      {/* ── Clothes tab ── */}
+      {tab === 'clothes' && (
+        <div>
+          {clothingPack.length === 0
+            ? <div className="empty"><div className="empty-icon">🧺</div><div className="empty-text">No wardrobe items yet — add clothes to your closet</div></div>
+            : <div>
+                <div style={{ fontSize: 13, color: 'var(--light)', marginBottom: 16 }}>{clothingPack.length} items for {trip.days} days · {luggageOpt.label}</div>
+
+                {(heroIds.length > 0 || heroSetIds.length > 0) && (
+                  <div className="pack-section">
+                    <div className="pack-section-label">⭐ Anchored Pieces</div>
+                    {clothingPack.filter(i => heroIds.includes(i.id) || heroSetIds.some(sid => { const s = savedOutfits.find(x => x.id === sid); return s && s.itemIds.includes(i.id); })).map(item => {
+                      const k = `c::${item.id}`;
+                      const isHeroSet = heroSetIds.some(sid => { const s = savedOutfits.find(x => x.id === sid); return s && s.itemIds.includes(item.id); });
+                      return (
+                        <div key={item.id} className={`pack-row ${checked[k] ? 'done' : ''}`} onClick={() => toggleCheck(k)}>
+                          <div className="pack-check">{checked[k] ? '✓' : ''}</div>
+                          <ItemThumb item={item} w={28} h={35} />
+                          <span className="pack-row-name">{item.name || 'Unnamed'}</span>
+                          <span style={{ fontSize: 11, color: 'var(--light)' }}>{ITEM_TYPES.find(t => t.id === item.type)?.label}</span>
+                          {heroIds.includes(item.id) && <span className="badge-hero">hero</span>}
+                          {isHeroSet && <span className="badge-saved">set</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="pack-section">
+                  <div className="pack-section-label">👗 Outfit Items</div>
+                  {clothingPack.filter(i => !heroIds.includes(i.id) && !heroSetIds.some(sid => { const s = savedOutfits.find(x => x.id === sid); return s && s.itemIds.includes(i.id); })).map(item => {
+                    const k = `c::${item.id}`;
+                    return (
+                      <div key={item.id} className={`pack-row ${checked[k] ? 'done' : ''}`} onClick={() => toggleCheck(k)}>
+                        <div className="pack-check">{checked[k] ? '✓' : ''}</div>
+                        <ItemThumb item={item} w={28} h={35} />
+                        <span className="pack-row-name">{item.name || 'Unnamed'}</span>
+                        <span style={{ fontSize: 11, color: 'var(--light)' }}>{ITEM_TYPES.find(t => t.id === item.type)?.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+          }
+        </div>
+      )}
+
+      {/* ── Essentials tab ── */}
+      {tab === 'essentials' && (
+        <div>
+          {Object.entries(essentials).map(([section, items]) => (
+            items && items.length > 0 ? (
+              <div key={section} className="pack-section">
+                <div className="pack-section-label">{section}</div>
+                {items.map(item => { const k = `e::${section}::${item.name}`; return (
+                  <div key={item.name} className={`pack-row ${checked[k] ? 'done' : ''}`} onClick={() => toggleCheck(k)}>
+                    <div className="pack-check">{checked[k] ? '✓' : ''}</div>
+                    <span className="pack-row-name">{item.name}</span>
+                    {item.essential && <span className="badge-must">must</span>}
+                  </div>
+                ); })}
+              </div>
+            ) : null
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── APP ────────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [view, setView] = useState('closet');
+
+  // YOUR DEFAULT 10 ITEMS
+  const DEFAULT_ITEMS = [
+    { id: 1, name: "Floral Mini Dress", type: "dress", photo: "floral multicolor mini dress.png", aesthetics: ["artsy"], warmth: 1, formality: 2 },
+    { id: 2, name: "Linen Set Pink", type: "set", photo: "linen top and pants set pink.png", aesthetics: ["old-money"], warmth: 2, formality: 1 },
+    { id: 3, name: "Coffee Linen Top", type: "top", photo: "linen top coffee.png", aesthetics: ["old-money"], warmth: 2, formality: 1 },
+    { id: 4, name: "Light Brown Linen", type: "top", photo: "linen top light brown.png", aesthetics: ["old-money"], warmth: 2, formality: 1 },
+    { id: 5, name: "Oatmeal Linen Top", type: "top", photo: "linen top oatmeal.png", aesthetics: ["old-money"], warmth: 2, formality: 1 },
+    { id: 6, name: "Light Brown Skort", type: "bottom", photo: "mini skort light brown.png", aesthetics: ["old-money"], warmth: 2, formality: 1 },
+    { id: 7, name: "Multicolor Coverup", type: "swimwear", photo: "multiclor coverup.png", aesthetics: ["artsy"], warmth: 1, formality: 0 },
+    { id: 8, name: "Sage Embroidery", type: "top", photo: "Sage embroidery top.png", aesthetics: ["artsy"], warmth: 2, formality: 1 },
+    { id: 9, name: "Sunhat", type: "accessory", photo: "sunhat.png", aesthetics: ["old-money"], warmth: 1, formality: 1 },
+    { id: 10, name: "Red Vest Set", type: "set", photo: "vest and shorts set red.png", aesthetics: ["old-money"], warmth: 2, formality: 2 }
+  ];
+
+  const [wardrobe, setWardrobe] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('packed_wardrobe'));
+      return (saved && saved.length > 0) ? saved : DEFAULT_ITEMS;
+    } catch {
+      return DEFAULT_ITEMS;
+    }
+  });
+
+  const [savedOutfits, setSavedOutfits] = useState(() => { 
+    try { return JSON.parse(localStorage.getItem('packed_sets') || '[]'); } 
+    catch { return []; } 
+  });
+
+  const [inspirationBoard, setInspirationBoard] = useState(() => { 
+    try { return JSON.parse(localStorage.getItem('packed_inspo') || '[]'); } 
+    catch { return []; } 
+  });
+
+ const [currentTrip, setCurrentTrip] = useState(null);
+  
+  // This line was missing! It saves your closet items when you add/delete them.
+  useEffect(() => { try { localStorage.setItem('packed_wardrobe', JSON.stringify(wardrobe)); } catch {} }, [wardrobe]);
+  
+  useEffect(() => { try { localStorage.setItem('packed_sets', JSON.stringify(savedOutfits)); } catch {} }, [savedOutfits]);
+  useEffect(() => { try { localStorage.setItem('packed_inspo', JSON.stringify(inspirationBoard)); } catch {} }, [inspirationBoard]);
+
+  function handleGeneratePack(trip) { setCurrentTrip(trip); setView('packing'); }
+
+  const inspoCount = inspirationBoard.length;
+
+  return (
+    <div className="app">
+      <nav className="nav">
+        <span className="nav-logo serif">✦ Packed</span>
+        <button className={`nav-btn ${view === 'closet' ? 'active' : ''}`} onClick={() => setView('closet')}>
+          👗 Closet{wardrobe.length > 0 ? ` (${wardrobe.length})` : ''}
+        </button>
+        <button className={`nav-btn ${view === 'inspo' ? 'active' : ''}`} onClick={() => setView('inspo')}>
+          🖼️ Inspiration{inspoCount > 0 ? ` (${inspoCount})` : ''}
+        </button>
+        <button className={`nav-btn ${view === 'trip' || view === 'packing' ? 'active' : ''}`} onClick={() => setView('trip')}>
+          ✈️ Plan Trip
+        </button>
+      </nav>
+      <main className="main">
+        {view === 'closet'  && <ClosetView wardrobe={wardrobe} setWardrobe={setWardrobe} savedOutfits={savedOutfits} setSavedOutfits={setSavedOutfits} />}
+        {view === 'inspo'   && <InspirationView board={inspirationBoard} setBoard={setInspirationBoard} />}
+        {view === 'trip'    && <TripSetupView wardrobe={wardrobe} savedOutfits={savedOutfits} inspirationBoard={inspirationBoard} onGeneratePack={handleGeneratePack} />}
+        {view === 'packing' && currentTrip && <PackingListView trip={currentTrip} wardrobe={wardrobe} savedOutfits={savedOutfits} inspirationBoard={inspirationBoard} onBack={() => setView('trip')} />}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
